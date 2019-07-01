@@ -8,5 +8,11 @@
     <artifactId>chatClient</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>sanchez.richard</groupId>
+            <artifactId>chatCommon</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
