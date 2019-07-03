@@ -5,7 +5,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class ChatServer {
@@ -15,6 +17,8 @@ public class ChatServer {
     private Selector selector = null;
 
     private ServerSocketChannel serverSocket = null;
+
+    private List<User> currentUsers = new ArrayList<>();
 
     public ChatServer(String arg) {
         try {
@@ -45,8 +49,11 @@ public class ChatServer {
         }
     }
 
-    private void registerNewUser() {
+    private void registerNewUser() throws IOException {
         //Register
+        SocketChannel client = serverSocket.accept();
+        client.configureBlocking(false);
+        client.register(selector, SelectionKey.OP_READ);
     }
 
     private void handleIncomingMessage(SelectionKey key) throws IOException {
