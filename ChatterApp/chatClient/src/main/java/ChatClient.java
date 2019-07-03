@@ -16,19 +16,22 @@ public class ChatClient {
     public void run() throws IOException {
         Socket socket = new Socket(hostName, BIND_PORT);
         System.out.println("What is your name?");
-
-
         while (true) {
-            BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(System.in));
-            String clientInput = reader.readLine();
-            //print sent message
-            socket.getOutputStream().write(clientInput.getBytes());
-            byte[] b = new byte[200];
-            socket.getInputStream().read(b);
-            String text = new String(b).trim();
-            System.out.println(text);
-            // print received
+        	BufferedReader reader =
+        			new BufferedReader(new InputStreamReader(System.in));
+
+
+            while(reader.ready()) {
+            	String clientInput = reader.readLine();
+            	socket.getOutputStream().write(clientInput.getBytes());
+            	if(socket.getInputStream().available()>3) {
+            		byte[] b = new byte[200];
+            		socket.getInputStream().read(b);
+            		
+            		String text = new String(b).trim();
+            		System.out.println(text);
+            	}
+            }
         }
     }
 
