@@ -52,36 +52,29 @@ public class ChatServer {
 
     private void registerNewUser() throws IOException {
         //Register
+        System.out.println("Starting register");
         SocketChannel client = serverSocket.accept();
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
+        System.out.println("Made it to read");
 
-        byte[] b = new byte[200];
-        while (client.socket().getInputStream().available() != 0) {
-            client.socket().getInputStream().read(b);
-            System.out.println("Read from client");
-        }
-        String text = new String(b).trim();
-
-        currentUsers.add(new User(text, client));
-        SocketChannel hold = null;
-        for (User u : currentUsers) {
-            if (u.Name.equals(text)) {
-                System.out.println("In the users");
-                hold = u.Channel;
-            }
-        }
-        client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hi " + text).getBytes()));
+        currentUsers.add(new User("default", client));
     }
 
     private void handleIncomingMessage(SelectionKey key) throws IOException {
         try (SocketChannel client = (SocketChannel) key.channel()) {
-            ByteBuffer requestBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
-            client.read(requestBuffer);
-            String request = new String(requestBuffer.array()).trim();
-            String response = null;
+            ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
+            client.read(nameBuffer);
+            String request = new String(nameBuffer.array()).trim();
+            SocketChannel hold = null;
+            for(User u : currentUsers) {
+                if(u.Channel == client){
+                    u.Name = request;
+                    hold = u.Channel;
+                }
+            }
             //Check if the message contains a username currently on the server
-            client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", response).getBytes()));
+            hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hello " + request).getBytes()));
         }
     }
 
