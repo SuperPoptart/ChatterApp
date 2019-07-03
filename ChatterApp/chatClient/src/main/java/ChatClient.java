@@ -19,17 +19,14 @@ public class ChatClient {
 
 
         while (true) {
-            System.out.println("/");
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(System.in));
             String clientInput = reader.readLine();
             //print sent message
             socket.getOutputStream().write(clientInput.getBytes());
             byte[] b = new byte[200];
-            System.out.println("Reading Message");
             socket.getInputStream().read(b);
             String text = new String(b).trim();
-            System.out.println("WRITITNG");
             System.out.println(text);
             // print received
         }

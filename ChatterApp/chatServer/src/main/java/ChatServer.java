@@ -35,30 +35,25 @@ public class ChatServer {
             selector.select();
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator<SelectionKey> iterator = keys.iterator();
-            System.out.println("Started loop");
             while (iterator.hasNext()) {
-                System.out.println("/");
                 SelectionKey key = iterator.next();
                 if (key.isAcceptable()) {
-                    System.out.println("Made to register");
                     registerNewUser();
                 }
                 if (key.isReadable()) {
+                    System.out.println("Handle");
                     handleIncomingMessage(key);
                 }
                 iterator.remove();
-                System.out.println("Removed");
             }
         }
     }
 
     private void registerNewUser() throws IOException {
         //Register
-        System.out.println("Starting register");
         SocketChannel client = serverSocket.accept();
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
-        System.out.println("Made it to read");
 
         currentUsers.add(new User("default", client));
     }
@@ -76,25 +71,23 @@ public class ChatServer {
             client.read(nameBuffer);
             String request = new String(nameBuffer.array()).trim();
             SocketChannel hold = null;
-            System.out.println("Makes it to users");
             for (User u : currentUsers) {
                 if (u.Channel == client) {
                     u.Name = request;
                     hold = u.Channel;
                 }
             }
-            System.out.println("Makes it to write");
             hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hello " + request).getBytes()));
         } else {
-            System.out.println("HANDLE THE MESSAGE");
             ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
             client.read(nameBuffer);
             String request = new String(nameBuffer.array()).trim();
-            String reviever = request.split(":")[0];
+            System.out.println("Sending: " + request);
+            String receiver = request.split(":")[0];
             String message = request.split(":")[1];
             SocketChannel hold = null;
             for (User u : currentUsers) {
-                if (u.Name.equals(reviever)) {
+                if (u.Name.equals(receiver)) {
                     hold = u.Channel;
                 }
             }
