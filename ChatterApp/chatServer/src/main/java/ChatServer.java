@@ -54,6 +54,7 @@ public class ChatServer {
         SocketChannel client = serverSocket.accept();
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
+
     }
 
     private void handleIncomingMessage(SelectionKey key) throws IOException {
