@@ -15,17 +15,21 @@ public class ChatClient {
 
     public void run() throws IOException {
         Socket socket = new Socket(hostName, BIND_PORT);
+        System.out.println("What is your name?");
+
 
         while (true) {
+            System.out.println("/");
             BufferedReader reader =
                     new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("What is your name?");
             String clientInput = reader.readLine();
             //print sent message
             socket.getOutputStream().write(clientInput.getBytes());
             byte[] b = new byte[200];
+            System.out.println("Reading Message");
             socket.getInputStream().read(b);
             String text = new String(b).trim();
+            System.out.println("WRITITNG");
             System.out.println(text);
             // print received
         }

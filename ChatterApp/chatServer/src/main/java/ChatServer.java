@@ -37,6 +37,7 @@ public class ChatServer {
             Iterator<SelectionKey> iterator = keys.iterator();
             System.out.println("Started loop");
             while (iterator.hasNext()) {
+                System.out.println("/");
                 SelectionKey key = iterator.next();
                 if (key.isAcceptable()) {
                     System.out.println("Made to register");
@@ -46,6 +47,7 @@ public class ChatServer {
                     handleIncomingMessage(key);
                 }
                 iterator.remove();
+                System.out.println("Removed");
             }
         }
     }
@@ -62,20 +64,43 @@ public class ChatServer {
     }
 
     private void handleIncomingMessage(SelectionKey key) throws IOException {
-        try (SocketChannel client = (SocketChannel) key.channel()) {
+        SocketChannel client = (SocketChannel) key.channel();
+        User holder = new User();
+        for (User u : currentUsers) {
+            if (u.Channel == client) {
+                holder = u;
+            }
+        }
+        if (holder.Name.equals("default")) {
             ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
             client.read(nameBuffer);
             String request = new String(nameBuffer.array()).trim();
             SocketChannel hold = null;
-            for(User u : currentUsers) {
-                if(u.Channel == client){
+            System.out.println("Makes it to users");
+            for (User u : currentUsers) {
+                if (u.Channel == client) {
                     u.Name = request;
                     hold = u.Channel;
                 }
             }
-            //Check if the message contains a username currently on the server
+            System.out.println("Makes it to write");
             hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hello " + request).getBytes()));
+        } else {
+            System.out.println("HANDLE THE MESSAGE");
+            ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
+            client.read(nameBuffer);
+            String request = new String(nameBuffer.array()).trim();
+            String reviever = request.split(":")[0];
+            String message = request.split(":")[1];
+            SocketChannel hold = null;
+            for (User u : currentUsers) {
+                if (u.Name.equals(reviever)) {
+                    hold = u.Channel;
+                }
+            }
+            hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", holder.Name + ": " + message).getBytes()));
         }
+        //Check if the message contains a username currently on the server
     }
 
     private void bindAndListenToPort() throws IOException {
