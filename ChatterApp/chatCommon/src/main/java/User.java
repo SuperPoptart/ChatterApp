@@ -1,9 +1,11 @@
-public class User {
-    public String IP;
-    public String Name;
+import java.nio.channels.SocketChannel;
 
-    public User(String name, String ip) {
+public class User {
+    public String Name;
+    public SocketChannel Channel;
+
+    public User(String name, SocketChannel add) {
         this.Name = name;
-        this.IP = ip;
+        this.Channel = add;
     }
 }

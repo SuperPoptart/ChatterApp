@@ -1,10 +1,8 @@
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -32,13 +30,16 @@ public class ChatServer {
         selector = Selector.open();
         bindAndListenToPort();
 
+
         while (true) {
             selector.select();
             Set<SelectionKey> keys = selector.selectedKeys();
             Iterator<SelectionKey> iterator = keys.iterator();
+            System.out.println("Started loop");
             while (iterator.hasNext()) {
                 SelectionKey key = iterator.next();
                 if (key.isAcceptable()) {
+                    System.out.println("Made to register");
                     registerNewUser();
                 }
                 if (key.isReadable()) {
@@ -55,6 +56,22 @@ public class ChatServer {
         client.configureBlocking(false);
         client.register(selector, SelectionKey.OP_READ);
 
+        byte[] b = new byte[200];
+        while (client.socket().getInputStream().available() != 0) {
+            client.socket().getInputStream().read(b);
+            System.out.println("Read from client");
+        }
+        String text = new String(b).trim();
+
+        currentUsers.add(new User(text, client));
+        SocketChannel hold = null;
+        for (User u : currentUsers) {
+            if (u.Name.equals(text)) {
+                System.out.println("In the users");
+                hold = u.Channel;
+            }
+        }
+        client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hi " + text).getBytes()));
     }
 
     private void handleIncomingMessage(SelectionKey key) throws IOException {
