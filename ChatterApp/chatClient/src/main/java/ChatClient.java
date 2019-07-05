@@ -25,7 +25,7 @@ public class ChatClient {
             	String clientInput = reader.readLine();
             	socket.getOutputStream().write(clientInput.getBytes());
             	if(socket.getInputStream().available()>3) {
-            		byte[] b = new byte[200];
+            		byte[] b = new byte[Configuration.BUFFER_CAPACITY];
             		socket.getInputStream().read(b);
             		
             		String text = new String(b).trim();

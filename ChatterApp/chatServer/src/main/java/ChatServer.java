@@ -66,34 +66,66 @@ public class ChatServer {
                 holder = u;
             }
         }
+        //CHANGING NAME
         if (holder.Name.equals("default")) {
             ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
             client.read(nameBuffer);
             String request = new String(nameBuffer.array()).trim();
-            SocketChannel hold = null;
-            for (User u : currentUsers) {
-                if (u.Channel == client) {
-                    u.Name = request;
-                    hold = u.Channel;
+            if (!conatinsName(currentUsers, request)) {
+                for (User u : currentUsers) {
+                    if (u.Channel == client) {
+                        u.Name = request;
+                    }
                 }
+                client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Server Says: Hello " + request).getBytes()));
+            } else {
+                client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "The name '" + request + "' is already in use please type another one!").getBytes()));
             }
-            hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Hello " + request).getBytes()));
         } else {
+            //SENDING A MESSAGE
             ByteBuffer nameBuffer = ByteBuffer.allocate(Configuration.BUFFER_CAPACITY);
             client.read(nameBuffer);
             String request = new String(nameBuffer.array()).trim();
-            System.out.println("Sending: " + request);
-            String receiver = request.split(":")[0];
-            String message = request.split(":")[1];
-            SocketChannel hold = null;
-            for (User u : currentUsers) {
-                if (u.Name.equals(receiver)) {
-                    hold = u.Channel;
+            if (request.equals("/list-users")) {
+                String tosend = "";
+                for (User u : currentUsers) {
+                    tosend += u.Name + ", ";
+                }
+                tosend = tosend.substring(0, tosend.length() - 2);
+                client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "Current Connected Users: " + tosend).getBytes()));
+            } else if (request.equals("/exit")) {
+                client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "This will exit").getBytes()));
+                int index;
+                currentUsers.remove(holder);
+                client.socket().shutdownOutput();
+                client.socket().close();
+            } else {
+                System.out.println("Sending: " + request);
+                String receiver = request.split(":")[0];
+                String message = request.split(":")[1];
+                if (conatinsName(currentUsers, receiver)) {
+                    SocketChannel hold = null;
+                    for (User u : currentUsers) {
+                        if (u.Name.equals(receiver)) {
+                            hold = u.Channel;
+                        }
+                    }
+                    hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", holder.Name + ":" + message).getBytes()));
+                } else {
+                    client.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", "That user is not connected!").getBytes()));
                 }
             }
-            hold.write(ByteBuffer.wrap(String.format("%" + Configuration.BUFFER_CAPACITY + "s", holder.Name + ": " + message).getBytes()));
         }
         //Check if the message contains a username currently on the server
+    }
+
+    private boolean conatinsName(List<User> currentUsers, String receiver) {
+        for (User u : currentUsers) {
+            if (u.Name.equals(receiver)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void bindAndListenToPort() throws IOException {
